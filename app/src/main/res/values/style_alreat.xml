@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <style name="UpdateDialogStyle" parent="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar.MinWidth">
+        <item name="android:color">@color/yellow</item>
+
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/yellow</item>
+        <item name="android:background">@color/white</item>
+
+    </style>
+
+
+
+</resources>
