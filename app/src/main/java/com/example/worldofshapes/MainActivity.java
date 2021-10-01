@@ -25,8 +25,14 @@ import android.widget.Toast;
 import com.example.worldofshapes.AdsPackage.AdsHandler;
 import com.example.worldofshapes.AdsPackage.AdsInterface;
 import com.example.worldofshapes.Helper.CenterZoomLayoutManager;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.admanager.AdManagerAdView;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 import java.util.ArrayList;
@@ -41,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
      int count=0;
      Boolean chk= false;
 
+     private AdManagerAdView mAdView;
     private CenterZoomLayoutManager centerZoomLayoutManager;
 
 //    private AdView adView;
@@ -64,11 +71,14 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
         sounds = new int[]{R.raw.circle, R.raw.triangle, R.raw.sphere, R.raw.square, R.raw.rectangle, R.raw.hexagon,
                 R.raw.pentagon, R.raw.cylinder, R.raw.cube, R.raw.pyramid, R.raw.cone};
 
-        /*adView = (AdView) findViewById(R.id.shapes_ad);
-        AdRequest adRequest = new AdRequest.Builder()
-                .tagForChildDirectedTreatment(true)
-                .build();
-        adView.loadAd(adRequest);*/
+        /*adView = (AdView) findViewById(R.id.shapes_ad);*/
+        // initialize Mobile Ads
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        loadBannerAd();
         home = (ImageView) findViewById(R.id.logout);
         // initialized Adshandler constructor
         adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
@@ -187,6 +197,50 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
                 mediaPlayer.start();
             }
         });
+    }
+
+    private void loadBannerAd() {
+        mAdView = findViewById(R.id.adManagerAdView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+        // listener  on ads
+        mAdView.setAdListener(new AdListener() {
+
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                super.onAdLoaded();
+                //Toast.makeText(getApplicationContext(), "AD Loaded....", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError adError) {
+                // Code to be executed when an ad request fails.
+                super.onAdFailedToLoad(adError);
+                mAdView.loadAd(adRequest);
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+                super.onAdOpened();
+            }
+
+            @Override
+            public void onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+                super.onAdClicked();
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when the user is about to return
+                // to the app after tapping on an ad.
+            }
+        });
+
+
     }
 
     private void initList() {
