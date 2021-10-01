@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
     private ShapesAdapter adapter;
     ImageView home;
      int count=0;
+     Boolean chk= false;
 
     private CenterZoomLayoutManager centerZoomLayoutManager;
 
@@ -84,14 +85,15 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                             public void onClick(DialogInterface dialog, int id) {
+                                chk=true;
                                 boolean t = adsHandler.checkInternetConenction();
-//                                if (t == true) {
-//                                    progressDialog.show();
-//                                    adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
-//                                    adsHandler.InterstitialAdLoad(getApplicationContext());
-//                                }else {
+                                if (t == true) {
+                                    progressDialog.show();
+                                    adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
+                                    adsHandler.InterstitialAdLoad(getApplicationContext());
+                                }else {
                                     finish();
-                                //}
+                                }
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -217,6 +219,9 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
                 public void onAdDismissedFullScreenContent() {
                     super.onAdDismissedFullScreenContent();
                     progressDialog.dismiss();
+                    if(chk){
+                        finish();
+                    }
                 }
             });
         }
