@@ -8,26 +8,37 @@ import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.example.worldofshapes.AdsPackage.AdsHandler;
+import com.example.worldofshapes.AdsPackage.AdsInterface;
 import com.example.worldofshapes.Helper.CenterZoomLayoutManager;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdsInterface {
     private RecyclerView shapesRecycler;
     private List<ImageItem> imageItemList;
     private ShapesAdapter adapter;
     ImageView home;
+     int count=0;
 
     private CenterZoomLayoutManager centerZoomLayoutManager;
 
@@ -38,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
     private int[] sounds;
+    ProgressDialog progressDialog;
+    AdsHandler adsHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         adView.loadAd(adRequest);*/
         home = (ImageView) findViewById(R.id.logout);
+        // initialized Adshandler constructor
+        adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
 
         home.bringToFront();
         home.setOnClickListener(new View.OnClickListener() {
@@ -67,8 +82,16 @@ public class MainActivity extends AppCompatActivity {
                 builder.setMessage("Do you want to exit?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
                             public void onClick(DialogInterface dialog, int id) {
-                                finish();
+                                boolean t = adsHandler.checkInternetConenction();
+//                                if (t == true) {
+//                                    progressDialog.show();
+//                                    adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
+//                                    adsHandler.InterstitialAdLoad(getApplicationContext());
+//                                }else {
+                                    finish();
+                                //}
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -85,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
         imageItemList = new ArrayList<>();
         initList();
         adapter = new ShapesAdapter(this, imageItemList);
-
         shapesRecycler = (RecyclerView) findViewById(R.id.recycler_shapes);
         centerZoomLayoutManager = new CenterZoomLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         shapesRecycler.setLayoutManager(centerZoomLayoutManager);
@@ -97,22 +119,53 @@ public class MainActivity extends AppCompatActivity {
         next = (Button) findViewById(R.id.next_shapes);
 
         counter = Integer.MAX_VALUE / 2;
-
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading.......");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        final Random myRandom = new Random();
         previous.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                counter = centerZoomLayoutManager.findLastCompletelyVisibleItemPosition();
-                counter--;
-                shapesRecycler.smoothScrollToPosition(counter);
+                count++;
+                int random = myRandom.nextInt(imageItemList.size());
+                Log.d("random", "" + random);
+                if (count == imageItemList.size()) {
+                    count = 0;
+                }
+                Log.d("Counter", "" + count);
+                // check network state
+                Boolean True = adsHandler.checkInternetConenction();
+                if (count == random && True) {
+                    progressDialog.show();
+                    adsHandler.InterstitialAdLoad(getApplicationContext());
+                } else {
+                    counter = centerZoomLayoutManager.findLastCompletelyVisibleItemPosition();
+                    counter--;
+                    shapesRecycler.smoothScrollToPosition(counter);
+
+                }
             }
         });
 
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                counter = centerZoomLayoutManager.findLastCompletelyVisibleItemPosition();
-                counter++;
-                shapesRecycler.smoothScrollToPosition(counter);
+                int random = myRandom.nextInt(imageItemList.size());
+                Log.d("random", "" + random);
+                if (count == imageItemList.size()) {
+                    count = 0;
+                }
+                Log.d("Counter", "" + count);
+                // check network state
+                Boolean True = adsHandler.checkInternetConenction();
+                if (count == random && True) {
+                    progressDialog.show();
+                    adsHandler.InterstitialAdLoad(getApplicationContext());
+                } else {
+                    counter = centerZoomLayoutManager.findLastCompletelyVisibleItemPosition();
+                    counter++;
+                    shapesRecycler.smoothScrollToPosition(counter);
+                }
             }
         });
 
@@ -152,5 +205,29 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         finish();
+    }
+
+    @Override
+    public void OnLoadAd(InterstitialAd interstitialAd, Activity activity) {
+        progressDialog.hide();
+        if (interstitialAd != null) {
+            interstitialAd.show(activity);
+            interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    super.onAdDismissedFullScreenContent();
+                    progressDialog.dismiss();
+                }
+            });
+        }
+    }
+
+    @Override
+    public void OnError(LoadAdError error, Activity activity) {
+        progressDialog.hide();
+        Toast.makeText(activity, ""+error, Toast.LENGTH_LONG).show();
+        Log.d("Error",""+error);
+
+
     }
 }
