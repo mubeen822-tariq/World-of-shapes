@@ -20,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.worldofshapes.AdsPackage.AdsHandler;
@@ -46,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
     ImageView home;
      int count=0;
      Boolean chk= false;
-
      private AdManagerAdView mAdView;
     private CenterZoomLayoutManager centerZoomLayoutManager;
 
@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
     private int[] sounds;
     ProgressDialog progressDialog;
     AdsHandler adsHandler;
+    boolean t;
+    LinearLayout parent_shapes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
+        shapesRecycler = (RecyclerView) findViewById(R.id.recycler_shapes);
+        parent_shapes= findViewById(R.id.parent_shapes);
         sounds = new int[]{R.raw.circle, R.raw.triangle, R.raw.sphere, R.raw.square, R.raw.rectangle, R.raw.hexagon,
                 R.raw.pentagon, R.raw.cylinder, R.raw.cube, R.raw.pyramid, R.raw.cone};
 
@@ -78,10 +82,23 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
             public void onInitializationComplete(InitializationStatus initializationStatus) {
             }
         });
+        // Initilized AdsHandler constructor
+        adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
+        // check network connection
+        t = adsHandler.checkInternetConenction();
         loadBannerAd();
+        if(t==false){
+//            LinearLayout.LayoutParams recyclerlayout = (LinearLayout.LayoutParams) shapesRecycler.getLayoutParams();
+//            LinearLayout.LayoutParams layout = (LinearLayout.LayoutParams) parent_shapes.getLayoutParams();
+//            recyclerlayout.weight=70;
+//           layout.weight=20;
+            mAdView.setVisibility(View.GONE);
+        }else {
+            mAdView.setVisibility(View.VISIBLE);
+        }
+
         home = (ImageView) findViewById(R.id.logout);
         // initialized Adshandler constructor
-        adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
 
         home.bringToFront();
         home.setOnClickListener(new View.OnClickListener() {
@@ -96,10 +113,8 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
 
                             public void onClick(DialogInterface dialog, int id) {
                                 chk=true;
-                                boolean t = adsHandler.checkInternetConenction();
                                 if (t == true) {
                                     progressDialog.show();
-                                    adsHandler = new AdsHandler(getApplicationContext(), MainActivity.this, MainActivity.this);
                                     adsHandler.InterstitialAdLoad(getApplicationContext());
                                 }else {
                                     finish();
@@ -116,11 +131,9 @@ public class MainActivity extends AppCompatActivity implements AdsInterface {
             }
         });
 
-
         imageItemList = new ArrayList<>();
         initList();
         adapter = new ShapesAdapter(this, imageItemList);
-        shapesRecycler = (RecyclerView) findViewById(R.id.recycler_shapes);
         centerZoomLayoutManager = new CenterZoomLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         shapesRecycler.setLayoutManager(centerZoomLayoutManager);
         shapesRecycler.setItemAnimator(new DefaultItemAnimator());
