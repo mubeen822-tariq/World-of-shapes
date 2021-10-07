@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">World of Shapes</string>
+    <string name="ads.APPLICATION_ID">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="BannerId">/6499/example/banner</string>
 </resources>
