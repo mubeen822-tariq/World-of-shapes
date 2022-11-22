@@ -9,7 +9,8 @@
         android:roundIcon="@drawable/app_iconn"
         android:supportsRtl="true"
         android:theme="@style/Theme.WorldOfShapes">
-        <activity android:name="com.littlerootsinc.trishapesshapes.Splash">
+        <activity android:name="com.littlerootsinc.trishapesshapes.Splash"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
